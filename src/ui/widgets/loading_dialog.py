@@ -23,7 +23,7 @@ class LoadingDialog:
         self.dialog.overrideredirect(False)
 
         # Set size
-        width, height = 400, 180
+        width, height = 400, 150
         self.dialog.geometry(f"{width}x{height}")
         self.dialog.resizable(False, False)
         self.dialog.transient(parent)
@@ -35,68 +35,33 @@ class LoadingDialog:
         y = parent.winfo_y() + (parent.winfo_height() // 2) - (height // 2)
         self.dialog.geometry(f"{width}x{height}+{x}+{y}")
 
-        # Main frame with padding and background
-        main_frame = tk.Frame(
-            self.dialog,
-            bg="#f0f0f0",
-            relief=tk.FLAT,
-            borderwidth=0
-        )
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        # Main frame with padding
+        main_frame = ttk.Frame(self.dialog, padding=20)
+        main_frame.pack(fill=tk.BOTH, expand=True)
 
         # Title label
-        title_label = tk.Label(
+        title_label = ttk.Label(
             main_frame,
             text=title,
             font=("Segoe UI", 14, "bold"),
-            bg="#f0f0f0",
-            fg="#333333"
         )
-        title_label.pack(pady=(10, 5))
+        title_label.pack(pady=(0, 10))
 
-        # Message label with better styling
-        self.message_label = tk.Label(
+        # Message label
+        self.message_label = ttk.Label(
             main_frame,
             text=message,
-            font=("Segoe UI", 10),
-            bg="#f0f0f0",
-            fg="#666666",
             wraplength=350
         )
-        self.message_label.pack(pady=(5, 20))
+        self.message_label.pack(pady=(0, 15))
 
-        # Progress bar with better styling
-        style = ttk.Style()
-        style.theme_use('clam')
-        style.configure(
-            "Custom.Horizontal.TProgressbar",
-            troughcolor='#e0e0e0',
-            bordercolor='#cccccc',
-            background='#2196F3',  # Blue color for better visibility
-            lightcolor='#2196F3',
-            darkcolor='#1976D2',
-            borderwidth=1,
-            thickness=20,  # Thicker bar
-            relief=tk.FLAT
-        )
-
-        # Progress bar container frame for better visibility
-        progress_frame = tk.Frame(
-            main_frame,
-            bg="#f0f0f0"
-        )
-        progress_frame.pack(pady=(0, 10), fill=tk.X)
-
+        # Progress bar
         self.progressbar = ttk.Progressbar(
-            progress_frame,
+            main_frame,
             mode='indeterminate',
             length=350,
-            style="Custom.Horizontal.TProgressbar"
         )
         self.progressbar.pack()
-
-        # Start animation with visible speed
-        # 10ms between steps = smooth animation
         self.progressbar.start(10)
 
         # Force the window to display
@@ -111,7 +76,7 @@ class LoadingDialog:
             message: New message to display
         """
         if hasattr(self, 'message_label'):
-            self.message_label.config(text=message, bg="#f0f0f0")
+            self.message_label.config(text=message)
             self.dialog.update_idletasks()
             self.dialog.update()
 

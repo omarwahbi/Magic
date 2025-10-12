@@ -9,13 +9,14 @@ from src.config.settings import AppSettings
 from src.models.extraction_data import ExtractionResult
 
 
-class ResultsTabs:
+class ResultsTabs(ttk.Notebook):
     """Notebook widget with matched and unmatched results tabs."""
 
     def __init__(
         self,
         parent: tk.Widget,
-        on_export_unmatched: Optional[Callable] = None
+        on_export_unmatched: Optional[Callable] = None,
+        **kwargs
     ):
         """
         Initialize results tabs.
@@ -24,15 +25,13 @@ class ResultsTabs:
             parent: Parent widget
             on_export_unmatched: Callback for exporting unmatched codes
         """
+        super().__init__(parent, **kwargs)
         self.settings = AppSettings()
         self.on_export_unmatched = on_export_unmatched
 
-        # Create notebook
-        self.notebook = ttk.Notebook(parent)
-
         # Tab 1: Matched items
-        matched_frame = tk.Frame(self.notebook)
-        self.notebook.add(matched_frame, text="Matched Items")
+        matched_frame = ttk.Frame(self)
+        self.add(matched_frame, text="Matched Items")
 
         self.matched_tree = DataTreeView(
             matched_frame,
@@ -47,18 +46,19 @@ class ResultsTabs:
         self.matched_tree.pack(fill="both", expand=True)
 
         # Configure tags for styling
-        self.matched_tree.configure_tag("success", background=self.settings.COLOR_SUCCESS)
-        self.matched_tree.configure_tag("missing", background=self.settings.COLOR_MISSING)
+        self.matched_tree.configure_tag("success", background="#d4edda")
+        self.matched_tree.configure_tag("missing", background="#f8d7da")
+
+
 
         # Tab 2: Unmatched codes
-        unmatched_frame = tk.Frame(self.notebook)
-        self.notebook.add(unmatched_frame, text="Codes NOT in Excel")
+        unmatched_frame = ttk.Frame(self)
+        self.add(unmatched_frame, text="Codes NOT in Excel")
 
-        tk.Label(
+        ttk.Label(
             unmatched_frame,
             text="These codes were found in PDF but don't exist in your Excel file:",
-            font=("Arial", 10, "bold"),
-            fg="red"
+            style="TLabel"
         ).pack(pady=5)
 
         self.unmatched_tree = DataTreeView(
@@ -74,17 +74,13 @@ class ResultsTabs:
         )
         self.unmatched_tree.pack(fill="both", expand=True)
 
-        tk.Button(
+        ttk.Button(
             unmatched_frame,
             text="Export to Excel",
             command=self._export_unmatched,
-            bg=self.settings.COLOR_PRIMARY,
-            fg="white"
         ).pack(pady=5)
 
-    def pack(self, **kwargs) -> None:
-        """Pack the notebook."""
-        self.notebook.pack(**kwargs)
+
 
     def populate(self, result: ExtractionResult, all_excel_codes: set) -> None:
         """

@@ -3,6 +3,7 @@ Simple tooltip widget for Tkinter.
 """
 
 import tkinter as tk
+from tkinter import ttk
 
 class ToolTip:
     """Create a tooltip for a given widget."""
@@ -22,14 +23,12 @@ class ToolTip:
         tw.wm_overrideredirect(True)
         tw.wm_geometry(f"+{x}+{y}")
 
-        label = tk.Label(
+        label = ttk.Label(
             tw,
             text=self.text,
             justify=tk.LEFT,
-            background="#ffffe0",
             relief=tk.SOLID,
             borderwidth=1,
-            font=("tahoma", "8", "normal")
         )
         label.pack(ipadx=1)
 

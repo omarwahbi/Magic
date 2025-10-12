@@ -28,7 +28,7 @@ class AppSettings:
     """Application settings."""
 
     # UI Settings
-    WINDOW_TITLE: str = "Semi-Automated Balance Updater"
+    WINDOW_TITLE: str = "Magic"
     WINDOW_SIZE: Tuple[int, int] = (900, 700)
 
     # Excel Settings
@@ -45,10 +45,3 @@ class AppSettings:
 
     # Tree View Settings
     TREE_HEIGHT: int = 15
-
-    # Colors
-    COLOR_SUCCESS: str = "#d4edda"
-    COLOR_MISSING: str = "#f8d7da"
-    COLOR_PRIMARY: str = "#2196F3"
-    COLOR_SUCCESS_BTN: str = "#4CAF50"
-    COLOR_WARNING: str = "#FF9800"

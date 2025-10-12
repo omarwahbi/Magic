@@ -78,8 +78,23 @@ class BalanceUpdaterApp:
 
     def _setup_ui(self) -> None:
         """Setup all UI components."""
-        # Top frame for main controls
-        top_frame = tk.Frame(self.root, padx=10, pady=10)
+        # --- Main layout frames ---
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(1, weight=1)
+
+        top_container = ttk.Frame(self.root, padding=10)
+        top_container.grid(row=0, column=0, sticky="ew")
+
+        middle_frame = ttk.Frame(self.root, padding=10)
+        middle_frame.grid(row=1, column=0, sticky="nsew")
+        middle_frame.rowconfigure(0, weight=1)
+        middle_frame.columnconfigure(0, weight=1)
+
+        bottom_frame = ttk.Frame(self.root, padding=10)
+        bottom_frame.grid(row=2, column=0, sticky="ew")
+
+        # --- Top Frame Content ---
+        top_frame = ttk.Frame(top_container)
         top_frame.pack(fill="x")
 
         # PDF selector
@@ -87,58 +102,60 @@ class BalanceUpdaterApp:
             top_frame,
             label_text="1. Select PDF(s):",
             button_text="Browse PDFs",
-            button_color=self.app_settings.COLOR_SUCCESS_BTN,
             file_types=[("PDF files", "*.pdf")],
             multiple=True,
             on_select=self._on_pdf_selected
         )
-        self.pdf_selector.grid(row=0, sticky="ew", pady=(0, 5))
+        self.pdf_selector.grid(row=0, column=0, sticky="ew", pady=(0, 5), columnspan=3)
 
         # Type selector
         self.type_selector = TypeSelector(top_frame, default_value="Stock", label_text="2. Select Type:")
-        self.type_selector.grid(row=1, sticky="ew", pady=5)
+        self.type_selector.grid(row=1, column=0, sticky="ew", pady=5, columnspan=3)
 
         # Extract button
-        tk.Button(
+        ttk.Button(
             top_frame,
-            text="3. Extract Data from PDF(s)",
+            text="Extract Data",
             command=self._extract_data,
-            bg=self.app_settings.COLOR_WARNING,
-            fg="white",
-            font=("Arial", 10, "bold"),
-            height=2
-        ).grid(row=0, column=1, rowspan=2, padx=10, pady=10, sticky="ns")
+        ).grid(row=0, column=3, rowspan=2, padx=10, pady=10, sticky="ns")
 
+        # Export button
+        export_menubutton = ttk.Menubutton(top_frame, text="Export")
+        export_menu = tk.Menu(export_menubutton, tearoff=False)
+        export_menubutton["menu"] = export_menu
+        export_menu.add_command(label="Export Unmatched", command=self._export_unmatched)
+        export_menu.add_command(label="Export Expired", command=self._export_expired)
+        export_menu.add_command(label="Export Duplicates", command=self._export_duplicates)
+        export_menu.add_command(label="Export Zero Balance", command=self._export_zero_balance)
+        export_menubutton.grid(row=0, column=4, rowspan=2, padx=10, pady=10, sticky="ns")
 
         # --- Settings Frame ---
-        settings_frame = ttk.LabelFrame(self.root, text="Settings", padding=(10, 5))
+        settings_frame = ttk.LabelFrame(top_container, text="Settings", padding=(10, 5))
         settings_frame.pack(fill="x", padx=10, pady=(5, 10))
 
-        tk.Label(settings_frame, text="Default Excel File:").grid(row=0, column=0, sticky="w")
+        ttk.Label(settings_frame, text="Default Excel File:").grid(row=0, column=0, sticky="w")
         
-        self.excel_path_label = tk.Label(settings_frame, text="Not Selected", fg="grey", anchor="w", justify=tk.LEFT)
+        self.excel_path_label = ttk.Label(settings_frame, text="Not Selected", anchor="w")
         self.excel_path_label.grid(row=0, column=1, sticky="ew", padx=5)
         
         from src.ui.widgets.tooltip import ToolTip
         self.excel_tooltip = ToolTip(self.excel_path_label, "")
 
-        tk.Button(
+        ttk.Button(
             settings_frame,
             text="Change...",
             command=self._select_excel_file,
-            bg=self.app_settings.COLOR_PRIMARY,
-            fg="white"
         ).grid(row=0, column=2)
         
         settings_frame.columnconfigure(1, weight=1)
 
-
+        # --- Middle Frame Content ---
         # Main content notebook
-        main_notebook = ttk.Notebook(self.root)
-        main_notebook.pack(fill="both", expand=True, padx=10, pady=10)
+        main_notebook = ttk.Notebook(middle_frame)
+        main_notebook.grid(row=0, column=0, sticky="nsew")
 
         # Results frame
-        results_frame = tk.Frame(main_notebook)
+        results_frame = ttk.Frame(main_notebook)
         main_notebook.add(results_frame, text="Extraction Results")
 
         self.results_tabs = ResultsTabs(
@@ -148,7 +165,7 @@ class BalanceUpdaterApp:
         self.results_tabs.pack(fill="both", expand=True)
 
         # Issues frame
-        issues_frame = tk.Frame(main_notebook)
+        issues_frame = ttk.Frame(main_notebook)
         main_notebook.add(issues_frame, text="Data Issues")
 
         self.issues_tabs = IssuesTabs(
@@ -159,44 +176,25 @@ class BalanceUpdaterApp:
         )
         self.issues_tabs.pack(fill="both", expand=True)
 
-        # --- Export Options Frame ---
-        export_frame = ttk.LabelFrame(self.root, text="Export Options", padding=(10, 5))
-        export_frame.pack(fill="x", padx=10, pady=5)
-
-        export_buttons = {
-            "Export Unmatched": self._export_unmatched,
-            "Export Expired": self._export_expired,
-            "Export Duplicates": self._export_duplicates,
-            "Export Zero Balance": self._export_zero_balance
-        }
-
-        for i, (text, command) in enumerate(export_buttons.items()):
-            btn = tk.Button(export_frame, text=text, command=command)
-            btn.grid(row=0, column=i, padx=5, pady=5, sticky="ew")
-            export_frame.columnconfigure(i, weight=1)
-
+        # --- Bottom Frame Content ---
         # Manual entry widget
         self.manual_entry = ManualEntryWidget(
-            self.root,
+            bottom_frame,
             on_update=self._handle_manual_update,
-            button_color=self.app_settings.COLOR_SUCCESS_BTN
         )
-        self.manual_entry.pack(fill="x", padx=10)
+        self.manual_entry.pack(fill="x", padx=10, pady=5)
 
         # Save button
-        tk.Button(
-            self.root,
+        self.save_button = ttk.Button(
+            bottom_frame,
             text="Save Updated Excel",
             command=self._save_excel,
-            bg=self.app_settings.COLOR_PRIMARY,
-            fg="white",
-            font=("Arial", 12, "bold"),
-            height=2
-        ).pack(pady=10, padx=10, fill="x")
+        )
+        self.save_button.pack(pady=10, padx=10, fill="x")
 
         # Status label
-        self.status_label = tk.Label(self.root, text="Ready", fg="blue", wraplength=self.app_settings.WINDOW_SIZE[0]-20)
-        self.status_label.pack(pady=(0, 5))
+        self.status_label = ttk.Label(bottom_frame, text="Ready", anchor="w")
+        self.status_label.pack(pady=(0, 5), fill="x")
 
     def _on_pdf_selected(self, files) -> None:
         """Handle PDF files selection."""

@@ -1,18 +1,10 @@
-"""File selector component for PDFs and Excel files."""
-
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import ttk, filedialog
 from typing import List, Optional, Callable
 import os
 
 
-import tkinter as tk
-from tkinter import filedialog
-from typing import List, Optional, Callable
-import os
-
-
-class FileSelector(tk.Frame):
+class FileSelector(ttk.Frame):
     """Widget for selecting PDF or Excel files."""
 
     def __init__(
@@ -20,7 +12,6 @@ class FileSelector(tk.Frame):
         parent: tk.Widget,
         label_text: str,
         button_text: str,
-        button_color: str,
         file_types: List[tuple],
         multiple: bool = False,
         on_select: Optional[Callable] = None,
@@ -33,7 +24,6 @@ class FileSelector(tk.Frame):
             parent: Parent widget
             label_text: Label text (e.g., "PDFs:")
             button_text: Button text (e.g., "Browse")
-            button_color: Button background color
             file_types: File type filters for dialog
             multiple: Whether to allow multiple file selection
             on_select: Callback when files are selected
@@ -48,25 +38,22 @@ class FileSelector(tk.Frame):
         self.columnconfigure(1, weight=1)
 
         # Create label
-        self.label = tk.Label(self, text=label_text)
+        self.label = ttk.Label(self, text=label_text)
         self.label.grid(row=0, column=0, sticky="w")
 
         # Create status label
-        self.status_label = tk.Label(
+        self.status_label = ttk.Label(
             self,
             text="No files selected" if multiple else "No file selected",
-            fg="gray",
             anchor="w"
         )
         self.status_label.grid(row=0, column=1, sticky="ew", padx=5)
 
         # Create browse button
-        self.button = tk.Button(
+        self.button = ttk.Button(
             self,
             text=button_text,
             command=self._browse,
-            bg=button_color,
-            fg="white"
         )
         self.button.grid(row=0, column=2, padx=5)
 
@@ -79,7 +66,6 @@ class FileSelector(tk.Frame):
                 self.selected_files = list(files)
                 self.status_label.config(
                     text=f"{len(files)} file{'s' if len(files) > 1 else ''} selected",
-                    fg="black"
                 )
                 if self.on_select:
                     self.on_select(self.selected_files)
@@ -89,7 +75,6 @@ class FileSelector(tk.Frame):
                 self.selected_file = file
                 self.status_label.config(
                     text=os.path.basename(file),
-                    fg="black"
                 )
                 if self.on_select:
                     self.on_select(self.selected_file)

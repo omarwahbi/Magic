@@ -7,12 +7,13 @@ from src.config.extraction_config import ExtractionType
 
 
 import tkinter as tk
+from tkinter import ttk
 from typing import Callable, Optional
 
 from src.config.extraction_config import ExtractionType
 
 
-class TypeSelector(tk.Frame):
+class TypeSelector(ttk.Frame):
     """Widget for selecting extraction type."""
 
     def __init__(
@@ -37,11 +38,11 @@ class TypeSelector(tk.Frame):
         self.value = tk.StringVar(value=default_value)
 
         # Label
-        tk.Label(self, text=label_text).pack(side="left")
+        ttk.Label(self, text=label_text).pack(side="left")
 
         # Radio buttons
         for extraction_type in ExtractionType:
-            tk.Radiobutton(
+            ttk.Radiobutton(
                 self,
                 text=extraction_type.value,
                 variable=self.value,

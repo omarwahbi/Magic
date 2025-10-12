@@ -5,14 +5,15 @@ from tkinter import ttk
 from typing import List, Tuple, Callable, Optional
 
 
-class DataTreeView:
+class DataTreeView(ttk.Frame):
     """Reusable TreeView widget with scrollbar."""
 
     def __init__(
         self,
         parent: tk.Widget,
         columns: List[Tuple[str, str, int]],
-        height: int = 15
+        height: int = 15,
+        **kwargs
     ):
         """
         Initialize DataTreeView.
@@ -22,18 +23,15 @@ class DataTreeView:
             columns: List of (id, heading, width) tuples
             height: Number of visible rows
         """
-        self.parent = parent
+        super().__init__(parent, **kwargs)
         self.columns = columns
 
         # Extract column IDs
         column_ids = [col[0] for col in columns]
 
-        # Create frame
-        self.frame = tk.Frame(parent)
-
         # Create treeview
         self.tree = ttk.Treeview(
-            self.frame,
+            self,
             columns=column_ids,
             show="headings",
             height=height
@@ -46,7 +44,7 @@ class DataTreeView:
 
         # Add scrollbar
         self.scrollbar = ttk.Scrollbar(
-            self.frame,
+            self,
             orient="vertical",
             command=self.tree.yview
         )
@@ -56,9 +54,7 @@ class DataTreeView:
         self.tree.pack(side="left", fill="both", expand=True)
         self.scrollbar.pack(side="right", fill="y")
 
-    def pack(self, **kwargs) -> None:
-        """Pack the tree frame."""
-        self.frame.pack(**kwargs)
+
 
     def insert(self, values: Tuple, tags: Tuple = ()) -> str:
         """

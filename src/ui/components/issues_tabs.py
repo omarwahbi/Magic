@@ -9,7 +9,7 @@ from src.config.settings import AppSettings
 from src.models.extraction_data import ExtractionResult
 
 
-class IssuesTabs:
+class IssuesTabs(ttk.Notebook):
     """Notebook widget with expired items and duplicate codes tabs."""
 
     def __init__(
@@ -17,7 +17,8 @@ class IssuesTabs:
         parent: tk.Widget,
         on_export_expired: Optional[Callable] = None,
         on_export_duplicates: Optional[Callable] = None,
-        on_export_zero_balance: Optional[Callable] = None
+        on_export_zero_balance: Optional[Callable] = None,
+        **kwargs
     ):
         """
         Initialize issues tabs.
@@ -27,23 +28,19 @@ class IssuesTabs:
             on_export_expired: Callback for exporting expired items
             on_export_duplicates: Callback for exporting duplicates
         """
+        super().__init__(parent, **kwargs)
         self.settings = AppSettings()
         self.on_export_expired = on_export_expired
         self.on_export_duplicates = on_export_duplicates
         self.on_export_zero_balance = on_export_zero_balance
 
-        # Create notebook
-        self.notebook = ttk.Notebook(parent)
-
         # Tab 1: Expired Items
-        expired_frame = tk.Frame(self.notebook)
-        self.notebook.add(expired_frame, text="Expired Items")
+        expired_frame = ttk.Frame(self)
+        self.add(expired_frame, text="Expired Items")
 
-        tk.Label(
+        ttk.Label(
             expired_frame,
             text="These items were found in the PDF but were skipped because they are expired:",
-            font=("Arial", 10, "bold"),
-            fg="orange"
         ).pack(pady=5)
 
         self.expired_tree = DataTreeView(
@@ -59,23 +56,19 @@ class IssuesTabs:
         )
         self.expired_tree.pack(fill="both", expand=True)
 
-        tk.Button(
+        ttk.Button(
             expired_frame,
             text="Export to Excel",
             command=self._export_expired,
-            bg=self.settings.COLOR_PRIMARY,
-            fg="white"
         ).pack(pady=5)
 
         # Tab 2: Duplicate Codes
-        duplicate_frame = tk.Frame(self.notebook)
-        self.notebook.add(duplicate_frame, text="Duplicate Codes")
+        duplicate_frame = ttk.Frame(self)
+        self.add(duplicate_frame, text="Duplicate Codes")
 
-        tk.Label(
+        ttk.Label(
             duplicate_frame,
             text="These national codes are assigned to more than one item in the PDF:",
-            font=("Arial", 10, "bold"),
-            fg="purple"
         ).pack(pady=5)
 
         self.duplicate_tree = DataTreeView(
@@ -90,23 +83,19 @@ class IssuesTabs:
         )
         self.duplicate_tree.pack(fill="both", expand=True)
 
-        tk.Button(
+        ttk.Button(
             duplicate_frame,
             text="Export to Excel",
             command=self._export_duplicates,
-            bg=self.settings.COLOR_PRIMARY,
-            fg="white"
         ).pack(pady=5)
 
         # Tab 3: Zero Balance Items
-        zero_balance_frame = tk.Frame(self.notebook)
-        self.notebook.add(zero_balance_frame, text="Zero Balance Items")
+        zero_balance_frame = ttk.Frame(self)
+        self.add(zero_balance_frame, text="Zero Balance Items")
 
-        tk.Label(
+        ttk.Label(
             zero_balance_frame,
             text="These items were found in the PDF but have zero or no balance:",
-            font=("Arial", 10, "bold"),
-            fg="red"
         ).pack(pady=5)
 
         self.zero_balance_tree = DataTreeView(
@@ -121,17 +110,13 @@ class IssuesTabs:
         )
         self.zero_balance_tree.pack(fill="both", expand=True)
 
-        tk.Button(
+        ttk.Button(
             zero_balance_frame,
             text="Export to Excel",
             command=self._export_zero_balance,
-            bg=self.settings.COLOR_PRIMARY,
-            fg="white"
         ).pack(pady=5)
 
-    def pack(self, **kwargs) -> None:
-        """Pack the notebook."""
-        self.notebook.pack(**kwargs)
+
 
     def populate(self, result: ExtractionResult) -> None:
         """

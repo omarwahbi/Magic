@@ -22,11 +22,13 @@ if str(src_dir.parent) not in sys.path:
 
 import tkinter as tk
 from src.ui.main_window import BalanceUpdaterApp
+import sv_ttk
 
 
 def main():
     """Initialize and run the application."""
     root = tk.Tk()
+    sv_ttk.set_theme("light")
     app = BalanceUpdaterApp(root)
     root.mainloop()
 

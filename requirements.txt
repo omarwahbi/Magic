@@ -9,4 +9,7 @@ openpyxl>=3.1.0
 # Data manipulation and export
 pandas>=2.0.0
 
+# UI Theming
+sv-ttk>=2.5.5
+
 # Note: tkinter is included with Python standard library
