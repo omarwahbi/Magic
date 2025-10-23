@@ -11,14 +11,17 @@ class ExtractionData:
     # Maps national code -> balance
     balances: Dict[str, float] = field(default_factory=dict)
 
-    # Maps national code -> item code (for unmatched report)
+    # Maps national code -> item code (for unmatched report) - DEPRECATED: use all_items
     item_codes: Dict[str, str] = field(default_factory=dict)
 
-    # Maps national code -> item name (for unmatched report)
+    # Maps national code -> item name (for unmatched report) - DEPRECATED: use all_items
     item_names: Dict[str, str] = field(default_factory=dict)
 
-    # Maps national code -> PDF filename (for unmatched report)
+    # Maps national code -> PDF filename (for unmatched report) - DEPRECATED: use all_items
     pdf_sources: Dict[str, str] = field(default_factory=dict)
+
+    # Maps national code -> list of ALL items (item_code, name, pdf_filename)
+    all_items: Dict[str, List[Tuple[str, str, str]]] = field(default_factory=dict)
 
     # Items with expiry issues: (national_code, item_code, name, expiry_date, pdf_filename)
     expired_items: List[Tuple[str, str, str, str, str]] = field(default_factory=list)
@@ -46,13 +49,22 @@ class ExtractionData:
         else:
             self.balances[national_code] = balance
 
-        # Store item code, name, and PDF source for reporting
+        # Store item code, name, and PDF source for reporting (DEPRECATED - kept for compatibility)
         if item_code:
             self.item_codes[national_code] = item_code
         if item_name:
             self.item_names[national_code] = item_name
         if pdf_filename:
             self.pdf_sources[national_code] = pdf_filename
+
+        # Track ALL items for this national code (for detailed reporting)
+        if item_code or item_name:
+            if national_code not in self.all_items:
+                self.all_items[national_code] = []
+            item_tuple = (item_code, item_name, pdf_filename)
+            # Only add if not already present (avoid duplicates)
+            if item_tuple not in self.all_items[national_code]:
+                self.all_items[national_code].append(item_tuple)
 
     def add_expired_item(self, national_code: str, item_code: str, name: str, expiry_date: str, pdf_filename: str = "") -> None:
         """

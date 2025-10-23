@@ -35,11 +35,12 @@ class DataValidator:
             if national_code in excel_codes:
                 result.matched_codes[national_code] = balance
             else:
-                # Code not in Excel - add with item code, name, and PDF source
-                item_code = extraction_data.item_codes.get(national_code, "")
-                item_name = extraction_data.item_names.get(national_code, "")
-                pdf_filename = extraction_data.pdf_sources.get(national_code, "")
-                result.unmatched_codes.append((national_code, item_code, item_name, balance, pdf_filename))
+                # Code not in Excel - add ALL items for this national code
+                items = extraction_data.all_items.get(national_code, [("", "", "")])
+
+                # Create one entry per item (shows all batches)
+                for item_code, item_name, pdf_filename in items:
+                    result.unmatched_codes.append((national_code, item_code, item_name, balance, pdf_filename))
 
         # Find missing codes (in Excel but not in PDF)
         for code in excel_codes:
