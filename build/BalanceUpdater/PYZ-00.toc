@@ -3252,6 +3252,10 @@
    'C:\\Users\\Omar\\Desktop\\magic - '
    'refractored\\src\\services\\pdf_extractor.py',
    'PYMODULE'),
+  ('src.services.settings_manager',
+   'C:\\Users\\Omar\\Desktop\\magic - '
+   'refractored\\src\\services\\settings_manager.py',
+   'PYMODULE'),
   ('src.ui',
    'C:\\Users\\Omar\\Desktop\\magic - refractored\\src\\ui\\__init__.py',
    'PYMODULE'),
@@ -3294,6 +3298,10 @@
    'C:\\Users\\Omar\\Desktop\\magic - '
    'refractored\\src\\ui\\widgets\\loading_dialog.py',
    'PYMODULE'),
+  ('src.ui.widgets.tooltip',
+   'C:\\Users\\Omar\\Desktop\\magic - '
+   'refractored\\src\\ui\\widgets\\tooltip.py',
+   'PYMODULE'),
   ('src.utils',
    'C:\\Users\\Omar\\Desktop\\magic - refractored\\src\\utils\\__init__.py',
    'PYMODULE'),
@@ -3321,6 +3329,9 @@
    'PYMODULE'),
   ('subprocess',
    'C:\\Users\\Omar\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\subprocess.py',
+   'PYMODULE'),
+  ('sv_ttk',
+   'C:\\Users\\Omar\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\sv_ttk\\__init__.py',
    'PYMODULE'),
   ('sysconfig',
    'C:\\Users\\Omar\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\sysconfig\\__init__.py',

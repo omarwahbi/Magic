@@ -68,6 +68,9 @@ class PDFExtractor:
         import os
         pdf_filename = os.path.basename(pdf_file)
 
+        # Track current_national_code across all pages/tables to handle cross-page items
+        current_national_code = ""
+
         with pdfplumber.open(pdf_file) as pdf:
             for page_num, page in enumerate(pdf.pages):
                 logging.debug(f"-- Processing Page {page_num + 1} --")
@@ -82,15 +85,19 @@ class PDFExtractor:
                     if page_num == 0:  # Log only first page
                         logging.debug(f"Raw Table Content: {table}")
 
-                    self._process_table(table, extraction_data, code_to_items, pdf_filename)
+                    # Pass and receive current_national_code to maintain state across tables
+                    current_national_code = self._process_table(
+                        table, extraction_data, code_to_items, pdf_filename, current_national_code
+                    )
 
     def _process_table(
         self,
         table: List[List[str]],
         extraction_data: ExtractionData,
         code_to_items: Dict[str, List],
-        pdf_filename: str = ""
-    ) -> None:
+        pdf_filename: str = "",
+        current_national_code: str = ""
+    ) -> str:
         """
         Process a single table from PDF.
 
@@ -99,13 +106,23 @@ class PDFExtractor:
             extraction_data: ExtractionData to populate
             code_to_items: Dictionary mapping national_code -> list of items
             pdf_filename: Name of the PDF file being processed
+            current_national_code: National code from previous table (for cross-page items)
+
+        Returns:
+            Last national code found in this table (for next table's context)
         """
         # Find all codes and their positions
-        code_positions = self._find_codes_in_table(table, code_to_items, extraction_data, pdf_filename)
+        code_positions = self._find_codes_in_table(
+            table, code_to_items, extraction_data, pdf_filename, current_national_code
+        )
 
         # Process each position to extract balance and check expiry
         for idx, (row_idx, national_code, item_code, name) in enumerate(code_positions):
-            # Skip national code header rows (no item code)
+            # Update current_national_code FIRST for cross-page tracking (even for header rows)
+            if national_code:
+                current_national_code = national_code
+
+            # Skip national code header rows (no item code) - but tracking is already updated
             if not item_code:
                 continue
 
@@ -120,6 +137,9 @@ class PDFExtractor:
 
             # Extract balance
             self._extract_balance(table, row_idx, end_row, national_code, item_code, name, extraction_data, pdf_filename)
+
+        # Return the last national code found in this table
+        return current_national_code
 
     def _extract_national_and_item_code(self, row: List[str]) -> tuple:
         """
@@ -209,7 +229,8 @@ class PDFExtractor:
         table: List[List[str]],
         code_to_items: Dict[str, List],
         extraction_data: ExtractionData,
-        pdf_filename: str = ""
+        pdf_filename: str = "",
+        current_national_code: str = ""
     ) -> List[Tuple[int, str, str, str]]:
         """
         Find all national codes and their items in table.
@@ -223,13 +244,15 @@ class PDFExtractor:
             table: Table data
             code_to_items: Dictionary mapping national_code -> list of (item_code, name)
             extraction_data: For recording items and duplicates
+            pdf_filename: Name of the PDF file being processed
+            current_national_code: National code from previous table (for cross-page items)
 
         Returns:
             List of (row_index, national_code, item_code, name) tuples for balance extraction
         """
         positions_for_balance = []
-        current_national_code = ""
         national_codes_in_this_table = []  # Track codes within this table
+        processed_items = set()  # Track (national_code, item_code) to avoid duplicates
 
         for r_idx, row in enumerate(table):
             if not row:
@@ -256,22 +279,26 @@ class PDFExtractor:
 
                 # If this row has both national code AND item code
                 if item_code:
-                    logging.debug(f"  Row {r_idx} has both national code and item code: {item_code}")
-                    code_to_items[current_national_code].append((item_code, name))
-                    positions_for_balance.append((r_idx, current_national_code, item_code, name))
+                    if (current_national_code, item_code) not in processed_items:
+                        logging.debug(f"  Row {r_idx} has both national code and item code: {item_code}")
+                        code_to_items[current_national_code].append((item_code, name))
+                        positions_for_balance.append((r_idx, current_national_code, item_code, name))
+                        processed_items.add((current_national_code, item_code))
                 else:
                     # National code only row
                     positions_for_balance.append((r_idx, current_national_code, "", name))
 
             elif item_code and current_national_code:
-                # This is an item row under the current national code
-                logging.debug(f"Row {r_idx}: Item {item_code} under national code {current_national_code}, name: {name}")
+                if (current_national_code, item_code) not in processed_items:
+                    # This is an item row under the current national code
+                    logging.debug(f"Row {r_idx}: Item {item_code} under national code {current_national_code}, name: {name}")
 
-                # Add this item to the national code's item list
-                code_to_items[current_national_code].append((item_code, name))
+                    # Add this item to the national code's item list
+                    code_to_items[current_national_code].append((item_code, name))
 
-                # Track for balance extraction
-                positions_for_balance.append((r_idx, current_national_code, item_code, name))
+                    # Track for balance extraction
+                    positions_for_balance.append((r_idx, current_national_code, item_code, name))
+                    processed_items.add((current_national_code, item_code))
 
         # Check for duplicates: if same code appears multiple times in this table
         code_counts = {}
@@ -363,39 +390,81 @@ class PDFExtractor:
             extraction_data: For storing balance
             pdf_filename: Name of the PDF file being processed
         """
-        # Find the last non-empty row in the item range (matches original logic)
-        balance_row_idx = end_row - 1
-        while balance_row_idx > row_idx:
-            if any(table[balance_row_idx]):  # Check if row has any content
-                break
-            balance_row_idx -= 1
+        # For STOCK type: Extract from item's own row (not the last row which might be TOTAL)
+        # For FREE/BUY types: Keep original logic (find last non-empty row)
+        if self.extraction_type == ExtractionType.STOCK:
+            # Stock type: Read balance from the item's own row (row_idx)
+            if row_idx < len(table):
+                balance_row = table[row_idx]
+                logging.debug(f"      >>> [STOCK] Reading from item's own row {row_idx}: {balance_row}")
 
-        if balance_row_idx < len(table):
-            balance_row = table[balance_row_idx]
-            logging.debug(f"      >>> Found balance row! Content: {balance_row}")
+                # Check if this is a TOTAL row (has balance but NO item code in column 10)
+                # Total rows have empty item code in column 10 (the cell to the right of balance in RTL)
+                if len(balance_row) > 10:
+                    item_code_cell = balance_row[10]
+                    if not item_code_cell or not str(item_code_cell).strip():
+                        # This is a TOTAL row - skip it!
+                        logging.debug(f"        >>> TOTAL row detected (empty item code in col 10) - SKIPPING")
+                        return
 
-            # Extract from configured column
-            if len(balance_row) > self.column_index:
-                cell = balance_row[self.column_index]
-                if cell:
-                    try:
-                        balance_str = str(cell).replace(',', '').strip()
-                        balance = float(balance_str)
-                        logging.debug(f"        >>> Found balance for national '{national_code}' item '{item_code}': {balance}")
+                # Extract from column 7 (STOCK balance column)
+                if len(balance_row) > self.column_index:
+                    cell = balance_row[self.column_index]
+                    if cell:
+                        try:
+                            balance_str = str(cell).replace(',', '').strip()
+                            balance = float(balance_str)
+                            logging.debug(f"        >>> Found balance for national '{national_code}' item '{item_code}': {balance}")
 
-                        # Check if balance is zero
-                        if balance == 0:
-                            logging.debug(f"        >>> Zero balance detected for '{national_code}' item '{item_code}'")
-                            extraction_data.add_zero_balance_item(national_code, item_code, name, pdf_filename)
+                            # Check if balance is zero
+                            if balance == 0:
+                                logging.debug(f"        >>> Zero balance detected for '{national_code}' item '{item_code}'")
+                                extraction_data.add_zero_balance_item(national_code, item_code, name, pdf_filename)
 
-                        extraction_data.add_balance(national_code, balance, item_code, name, pdf_filename)
-                    except (ValueError, TypeError):
-                        logging.warning(f"        Could not convert '{cell}' to number.")
+                            extraction_data.add_balance(national_code, balance, item_code, name, pdf_filename)
+                        except (ValueError, TypeError):
+                            logging.warning(f"        Could not convert '{cell}' to number.")
+                    else:
+                        # Cell is empty - no balance found
+                        logging.debug(f"        >>> No balance found (empty cell) for national '{national_code}' item '{item_code}'")
+                        extraction_data.add_zero_balance_item(national_code, item_code, name, pdf_filename)
                 else:
-                    # Cell is empty - no balance found
-                    logging.debug(f"        >>> No balance found (empty cell) for national '{national_code}' item '{item_code}'")
+                    logging.warning(f"      Balance row does not have the required column index: {self.column_index}")
                     extraction_data.add_zero_balance_item(national_code, item_code, name, pdf_filename)
-            else:
-                logging.warning(f"      Balance row does not have the required column index: {self.column_index}")
-                # Row doesn't have the column - report as zero balance
-                extraction_data.add_zero_balance_item(national_code, item_code, name, pdf_filename)
+        else:
+            # FREE/BUY types: Keep original logic - find the last non-empty row in the item range
+            balance_row_idx = end_row - 1
+            while balance_row_idx > row_idx:
+                if any(table[balance_row_idx]):  # Check if row has any content
+                    break
+                balance_row_idx -= 1
+
+            if balance_row_idx < len(table):
+                balance_row = table[balance_row_idx]
+                logging.debug(f"      >>> Found balance row! Content: {balance_row}")
+
+                # Extract from configured column
+                if len(balance_row) > self.column_index:
+                    cell = balance_row[self.column_index]
+                    if cell:
+                        try:
+                            balance_str = str(cell).replace(',', '').strip()
+                            balance = float(balance_str)
+                            logging.debug(f"        >>> Found balance for national '{national_code}' item '{item_code}': {balance}")
+
+                            # Check if balance is zero
+                            if balance == 0:
+                                logging.debug(f"        >>> Zero balance detected for '{national_code}' item '{item_code}'")
+                                extraction_data.add_zero_balance_item(national_code, item_code, name, pdf_filename)
+
+                            extraction_data.add_balance(national_code, balance, item_code, name, pdf_filename)
+                        except (ValueError, TypeError):
+                            logging.warning(f"        Could not convert '{cell}' to number.")
+                    else:
+                        # Cell is empty - no balance found
+                        logging.debug(f"        >>> No balance found (empty cell) for national '{national_code}' item '{item_code}'")
+                        extraction_data.add_zero_balance_item(national_code, item_code, name, pdf_filename)
+                else:
+                    logging.warning(f"      Balance row does not have the required column index: {self.column_index}")
+                    # Row doesn't have the column - report as zero balance
+                    extraction_data.add_zero_balance_item(national_code, item_code, name, pdf_filename)
