@@ -4,9 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Balance Updater** is a pharmaceutical balance extraction tool that extracts medicine balance data from PDF files and updates Excel spreadsheets. The application has been refactored from a monolithic 526-line file into a modular architecture with 24+ files following clean architecture principles.
-
-**NOTE:** This codebase uses a modular clean architecture with 24+ files organized in the `src/` directory. The original monolithic version has been removed.
+**Magic** is a pharmaceutical balance extraction tool that extracts medicine balance data from PDF files and updates Excel spreadsheets. The application uses a modular clean architecture with organized layers for maintainability and extensibility.
 
 ## Running the Application
 
@@ -29,18 +27,16 @@ pip install -r requirements.txt
 
 ### Building Standalone Executable
 ```bash
-# Quick build
+# Quick build (Windows)
 build.bat
 
-# Or using Python
+# Cross-platform build
 python build_executable.py
-
-# Or manual PyInstaller
-pip install pyinstaller
-pyinstaller --name=Magic --onefile --windowed --add-data="src;src" --hidden-import=sv_ttk run_app.py
 ```
 
 Output: `dist/Magic.exe` (works on any Windows PC without Python)
+
+For detailed build instructions, see `BUILD_GUIDE.md`.
 
 ## Architecture Overview
 
@@ -49,7 +45,7 @@ Output: `dist/Magic.exe` (works on any Windows PC without Python)
 ```
 src/
 ├── config/              # Configuration layer
-│   ├── settings.py      # App-wide settings (file paths, defaults)
+│   ├── settings.py      # App-wide settings (file paths, defaults, logging)
 │   └── extraction_config.py  # PDF extraction type configurations
 │
 ├── models/              # Data models (pure data structures)
@@ -57,7 +53,7 @@ src/
 │   └── extraction_data.py  # Extraction results, validation results
 │
 ├── services/            # Business logic (NO UI dependencies)
-│   ├── pdf_extractor.py    # PDF extraction logic
+│   ├── pdf_extractor.py    # PDF extraction logic with warnings
 │   ├── excel_handler.py    # Excel read/write operations
 │   ├── data_validator.py   # Data validation & matching
 │   ├── export_service.py   # Export to Excel functionality
@@ -70,7 +66,7 @@ src/
 │
 └── ui/                  # User interface (presentation only)
     ├── main_window.py      # Main application window
-    ├── style.py            # UI styling configuration (sv-ttk based)
+    ├── theme.py            # Theme system (colors, icons, typography, spacing)
     ├── components/         # UI components
     │   ├── file_selector.py
     │   ├── type_selector.py
@@ -95,11 +91,9 @@ src/
 
 ### PDF Extraction Logic
 
-The PDF extraction has complex business logic for handling doubled characters in PDF text:
-
 **Doubled Character Bug**: PDFPlumber sometimes extracts text with doubled characters (e.g., "HHeelllloo" instead of "Hello"). The `fix_doubled_chars()` utility handles this by taking every other character.
 
-**National Code Pattern**: Medicine codes follow format `XX-XXX-XXX` (e.g., "IR-12B-001")
+**National Code Pattern**: Medicine codes follow format `XX-XXX-XXX` (e.g., "02-K00-002")
 - Must be uppercase
 - Validated using regex: `([A-Z0-9]{2}-[A-Z0-9]{3}-+[A-Z0-9]{3})`
 
@@ -109,6 +103,23 @@ The PDF extraction has complex business logic for handling doubled characters in
 - **Buy**: Column 2 (purchases) → Excel Column H
 
 Configuration is in `src/config/extraction_config.py` - modify there to change column mappings.
+
+### Warnings System
+
+The extraction process logs warnings to `extraction_log.txt`:
+
+1. **Cross-Page Continuation** (INFO level):
+   - Items at page start without national code header
+   - Assigned to previous page's national code
+   - May indicate missing headers in PDF
+   - Format: `ℹ️ Cross-page continuation in '{filename}': Item {code} ('{name}') assigned to national code {nc} from previous page/table`
+
+2. **Orphan Items** (WARNING level):
+   - Items with NO national code at all
+   - Will be skipped during extraction
+   - Format: `⚠️ ORPHAN ITEM in '{filename}' at row {row}: Item code '{code}', name '{name}' has NO national code header!`
+
+Logging configuration in `src/config/settings.py` - currently set to INFO level to capture all warnings.
 
 ### Expiry Date Validation
 
@@ -126,6 +137,7 @@ PDFExtractor.extract_from_files()
     → Reads PDFs
     → Cleans text with fix_doubled_chars()
     → Extracts national codes + balances
+    → Logs cross-page continuation warnings
     → Validates expiry dates
     → Returns ExtractionData
     ↓
@@ -141,17 +153,29 @@ ExcelHandler.update_and_save()
     → Saves with timestamp
 ```
 
-### UI Architecture & Styling
+### UI Architecture & Modern Design System
 
-The modular UI uses `sv-ttk` (Sun Valley ttk theme) for modern styling:
-- **Theme**: Sun Valley Light theme via `sv_ttk.set_theme("light")`
-- **Color scheme**: Blue primary (#2196F3), green success (#4CAF50), orange warning (#FF9800), red danger (#F44336)
-- **Centralized styles**: All styling defined in `src/ui/style.py` using `AppStyle` class
-- **Styled components**: Custom button styles (Success, Primary, Warning), treeview, labels, notebook tabs
-- **Fonts**: Arial-based with 10pt/12pt sizes, bold variants for headers
-- **Tooltips**: Custom tooltip widget in `src/ui/widgets/tooltip.py`
+The modular UI uses a custom theme system for modern, professional appearance:
 
-See `src/ui/style.py:24` for the `configure_styles()` method that sets up all TTK styles.
+**Theme System** (`src/ui/theme.py`):
+- **Colors**: Indigo primary (#6366F1), Emerald success (#10B981), Amber warning (#F59E0B), Red error (#EF4444)
+- **Typography**: Segoe UI font family, multiple size scales (11-24pt)
+- **Spacing**: 8px grid system (xs=4px, sm=8px, md=16px, lg=24px, xl=32px, xxl=48px)
+- **Icons**: Unicode emoji icons for consistent visual indicators (✨📊✓⚠️🔍📕📗)
+- **Components**: Pre-defined button, card, and status badge styles
+
+**Layout** (`src/ui/main_window.py`):
+- Card-based design for visual hierarchy
+- Horizontal layouts for better flow
+- Fixed button widths (no awkward expanding)
+- Enhanced status bar with border and padding
+- Three-section structure: Top (inputs), Middle (results), Bottom (actions)
+
+**Key Features**:
+- View Log button (🔍 View Log) - Opens extraction_log.txt in default editor
+- Icons throughout UI for visual feedback
+- Modern button sizing (Extract=20, Export=15, Save=30, View Log=15)
+- Status messages with contextual icons
 
 ### Common Development Patterns
 
@@ -169,15 +193,25 @@ See `src/ui/style.py:24` for the `configure_styles()` method that sets up all TT
 - Main window layout: `src/ui/main_window.py`
 - Individual components: `src/ui/components/*.py`
 - Reusable widgets: `src/ui/widgets/*.py`
-- Styling: Modify `src/ui/style.py` for colors, fonts, button styles
+- Theme (colors, icons, spacing): `src/ui/theme.py`
 - Keep UI logic separate from business logic
 
-**UI Initialization Order (Critical):**
-1. Create `tk.Tk()` root window
-2. Call `sv_ttk.set_theme("light")` to apply theme
-3. Call `AppStyle.configure_styles()` to apply custom styles
-4. Create application window
-See `src/main.py:28-33` for the correct initialization sequence.
+**Using Theme System:**
+```python
+from src.ui.theme import theme, icons
+
+# Colors
+primary_color = theme.colors.primary  # #6366F1
+success_color = theme.colors.success  # #10B981
+
+# Spacing
+padding = theme.spacing.md  # 16px
+margin = theme.spacing.sm   # 8px
+
+# Icons
+button_text = f"{icons.MAGIC} Extract Data"  # ✨ Extract Data
+status_text = f"{icons.SUCCESS} Complete"     # ✓ Complete
+```
 
 ## Testing Strategy
 
@@ -222,11 +256,11 @@ The loading dialog displays during PDF extraction. If it appears blank, ensure:
 ### Building Executable Fails
 If PyInstaller build fails:
 1. Ensure all dependencies installed: `pip install -r requirements.txt`
-2. Add missing imports: `--hidden-import=module_name` (especially `--hidden-import=sv_ttk`)
+2. Add missing imports: `--hidden-import=module_name`
 3. Clean build: Delete `build/` and `dist/` folders, rebuild
 4. Use `build.bat` or `build_executable.py` for correct configuration
 
-**Note**: Build scripts may reference "BalanceUpdater" but the current executable is named "Magic.exe". Update build scripts if you need the "BalanceUpdater" name.
+See `BUILD_GUIDE.md` for detailed troubleshooting.
 
 ## Configuration Files
 
@@ -235,24 +269,35 @@ Critical dependencies:
 - `pdfplumber>=0.9.0` - PDF text extraction
 - `pandas>=2.0.0` - Data manipulation
 - `openpyxl>=3.1.0` - Excel file handling
-- `sv-ttk>=2.5.5` - Sun Valley TTK theme for modern UI
 - Standard library: `tkinter`, `logging`, `datetime`, `re`
 
 ### settings.json
 User preferences stored here:
-- Last selected extraction type
-- Recent file paths (future feature)
+- Excel file path (persisted between sessions)
+- Created at runtime if not exists
+- Location: project root
 
-Created at runtime if not exists. Location: project root.
+### extraction_log.txt
+Extraction warnings and diagnostic information:
+- Cross-page continuation warnings
+- Orphan item warnings
+- Duplicate code warnings
+- Saved extraction statistics
+- Location: project root
+- Level: INFO (configured in `src/config/settings.py`)
 
-## Build & Distribution
+## Documentation Structure
 
-See detailed guides:
-- `BUILD_INSTRUCTIONS.md` - Comprehensive build documentation
-- `QUICK_BUILD_GUIDE.md` - Fast build steps
-- `HOW_TO_DISTRIBUTE.md` - Distribution options
+```
+magic/
+├── README.md              # Project overview and quick start
+├── USER_GUIDE.md          # Complete user manual
+├── BUILD_GUIDE.md         # Build and distribution guide
+├── TROUBLESHOOTING.md     # Common issues and solutions
+└── CLAUDE.md             # This file - AI context
+```
 
-Quick build: Double-click `build.bat` or run `python build_executable.py`
+All documentation consolidated into 5 essential files. Old documentation removed for clarity.
 
 ## File Naming Conventions
 
@@ -266,9 +311,9 @@ Quick build: Double-click `build.bat` or run `python build_executable.py`
 - **Type hints**: Use throughout for IDE support
 - **Docstrings**: All public methods must have docstrings
 - **Error handling**: Services raise exceptions, UI catches and displays
-- **Logging**: Use `logging.warning()` for issues, not `print()`
+- **Logging**: Use `logging.info()` / `logging.warning()` for diagnostic messages
 - **Constants**: UPPER_CASE in config files or at module top
-- **UI strings**: Can be extracted to config for i18n (future)
+- **Icons**: Use `icons` from theme.py for consistency
 
 ## Performance Considerations
 
@@ -284,31 +329,28 @@ Quick build: Double-click `build.bat` or run `python build_executable.py`
 - **Local processing**: All data processing happens locally
 - **No network calls**: Application is fully offline
 
-## Future Enhancements (Architecture Ready For)
-
-The modular architecture makes these easy to add:
-1. **Database support**: Add repository layer in `services/`
-2. **API integration**: Add API client in `services/`
-3. **Async processing**: Refactor services to use `asyncio`
-4. **Plugin system**: Services already injectable
-5. **Multi-language**: Extract UI strings to config
-6. **Batch processing**: Add batch service in `services/`
-7. **CLI interface**: Create CLI entry point using same services
-8. **Web interface**: Services are UI-agnostic
-
 ## Important Files to Understand
 
 Must read when making changes:
 1. `src/config/extraction_config.py` - Column mappings and extraction logic
-2. `src/services/pdf_extractor.py` - Core PDF extraction (most complex)
+2. `src/services/pdf_extractor.py` - Core PDF extraction with warnings (most complex)
 3. `src/utils/text_cleaner.py` - Handles doubled character bug
-4. `src/ui/main_window.py` - UI orchestration
-5. `src/ui/style.py` - UI styling and theming configuration
-6. `src/main.py` - Application entry point
+4. `src/ui/main_window.py` - UI orchestration and layout
+5. `src/ui/theme.py` - Theme system (colors, icons, spacing, typography)
+6. `src/config/settings.py` - App settings and logging configuration
 
 ## Version History
 
 - **v1.0**: Original monolithic file (526 lines)
 - **v2.0**: Refactored to modular architecture (24+ files)
-- **v2.1**: Integrated sv-ttk theme library for modern UI styling
-- **Current**: Fully modular architecture with clean separation of concerns
+- **v2.1**: Added warnings system for cross-page continuation and orphan items
+- **v2.2**: UI modernization with theme system, icons, and card-based layout
+- **v2.3**: Documentation cleanup - consolidated into 5 essential files
+- **Current**: Fully modular with clean architecture, modern UI, and comprehensive warnings
+
+## Quick Reference
+
+**User Documentation**: See `USER_GUIDE.md`
+**Build Documentation**: See `BUILD_GUIDE.md`
+**Troubleshooting**: See `TROUBLESHOOTING.md`
+**Project Info**: See `README.md`

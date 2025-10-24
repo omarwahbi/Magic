@@ -21,6 +21,9 @@ from src.ui.components.issues_tabs import IssuesTabs
 from src.ui.components.manual_entry import ManualEntryWidget
 from src.ui.widgets.loading_dialog import LoadingDialog
 from src.services.settings_manager import SettingsManager
+from src.ui.theme import theme, icons
+import subprocess
+import sys
 
 
 class BalanceUpdaterApp:
@@ -41,7 +44,7 @@ class BalanceUpdaterApp:
         LoggingConfig().configure()
 
         # Configure window
-        self.root.title(self.app_settings.WINDOW_TITLE)
+        self.root.title(f"{icons.MAGIC} {self.app_settings.WINDOW_TITLE}")
         self.root.geometry(f"{self.app_settings.WINDOW_SIZE[0]}x{self.app_settings.WINDOW_SIZE[1]}")
         self.root.state('zoomed') # Start maximized
 
@@ -76,6 +79,20 @@ class BalanceUpdaterApp:
         else:
             self.excel_path_label.config(text="No Excel file selected")
 
+    def _create_card_frame(self, parent: tk.Widget, **kwargs) -> ttk.Frame:
+        """
+        Create a card-style frame with consistent styling.
+
+        Args:
+            parent: Parent widget
+            **kwargs: Additional frame options
+
+        Returns:
+            Styled frame widget
+        """
+        frame = ttk.Frame(parent, **kwargs)
+        return frame
+
     def _setup_ui(self) -> None:
         """Setup all UI components."""
         # --- Main layout frames ---
@@ -94,60 +111,74 @@ class BalanceUpdaterApp:
         bottom_frame.grid(row=2, column=0, sticky="ew")
 
         # --- Top Frame Content ---
-        top_frame = ttk.Frame(top_container)
-        top_frame.pack(fill="x")
+        # Use horizontal layout with cards for better visual hierarchy
+
+        # Card 1: File Selection Section
+        file_card = self._create_card_frame(top_container, padding=theme.spacing.md)
+        file_card.pack(fill="x", pady=(0, theme.spacing.sm))
 
         # PDF selector
         self.pdf_selector = FileSelector(
-            top_frame,
-            label_text="1. Select PDF(s):",
+            file_card,
+            label_text=f"{icons.PDF} 1. Select PDF Files:",
             button_text="Browse PDFs",
             file_types=[("PDF files", "*.pdf")],
             multiple=True,
             on_select=self._on_pdf_selected
         )
-        self.pdf_selector.grid(row=0, column=0, sticky="ew", pady=(0, 5), columnspan=3)
+        self.pdf_selector.pack(fill="x", pady=(0, theme.spacing.sm))
 
-        # Type selector
-        self.type_selector = TypeSelector(top_frame, default_value="Stock", label_text="2. Select Type:")
-        self.type_selector.grid(row=1, column=0, sticky="ew", pady=5, columnspan=3)
+        # Excel file selector
+        excel_frame = ttk.Frame(file_card)
+        excel_frame.pack(fill="x")
 
-        # Extract button
-        ttk.Button(
-            top_frame,
-            text="Extract Data",
-            command=self._extract_data,
-        ).grid(row=0, column=3, rowspan=2, padx=10, pady=10, sticky="ns")
+        ttk.Label(excel_frame, text=f"{icons.EXCEL} 2. Default Excel File:").pack(side="left", padx=(0, theme.spacing.sm))
 
-        # Export button
-        export_menubutton = ttk.Menubutton(top_frame, text="Export")
-        export_menu = tk.Menu(export_menubutton, tearoff=False)
-        export_menubutton["menu"] = export_menu
-        export_menu.add_command(label="Export Unmatched", command=self._export_unmatched)
-        export_menu.add_command(label="Export Expired", command=self._export_expired)
-        export_menu.add_command(label="Export Duplicates", command=self._export_duplicates)
-        export_menu.add_command(label="Export Zero Balance", command=self._export_zero_balance)
-        export_menubutton.grid(row=0, column=4, rowspan=2, padx=10, pady=10, sticky="ns")
+        self.excel_path_label = ttk.Label(excel_frame, text="Not Selected", anchor="w")
+        self.excel_path_label.pack(side="left", fill="x", expand=True, padx=theme.spacing.sm)
 
-        # --- Settings Frame ---
-        settings_frame = ttk.LabelFrame(top_container, text="Settings", padding=(10, 5))
-        settings_frame.pack(fill="x", padx=10, pady=(5, 10))
-
-        ttk.Label(settings_frame, text="Default Excel File:").grid(row=0, column=0, sticky="w")
-        
-        self.excel_path_label = ttk.Label(settings_frame, text="Not Selected", anchor="w")
-        self.excel_path_label.grid(row=0, column=1, sticky="ew", padx=5)
-        
         from src.ui.widgets.tooltip import ToolTip
         self.excel_tooltip = ToolTip(self.excel_path_label, "")
 
         ttk.Button(
-            settings_frame,
+            excel_frame,
             text="Change...",
             command=self._select_excel_file,
-        ).grid(row=0, column=2)
-        
-        settings_frame.columnconfigure(1, weight=1)
+            width=12
+        ).pack(side="left")
+
+        # Card 2: Type Selection & Actions
+        control_card = self._create_card_frame(top_container, padding=theme.spacing.md)
+        control_card.pack(fill="x", pady=(0, theme.spacing.sm))
+
+        # Left side: Type selector
+        type_frame = ttk.Frame(control_card)
+        type_frame.pack(side="left", fill="x", expand=True)
+
+        self.type_selector = TypeSelector(type_frame, default_value="Stock", label_text=f"{icons.CHART} 3. Select Type:")
+        self.type_selector.pack(fill="x")
+
+        # Right side: Action buttons
+        actions_frame = ttk.Frame(control_card)
+        actions_frame.pack(side="left", padx=(theme.spacing.lg, 0))
+
+        # Extract button (primary action)
+        ttk.Button(
+            actions_frame,
+            text=f"{icons.MAGIC} Extract Data",
+            command=self._extract_data,
+            width=20
+        ).pack(side="left", padx=(0, theme.spacing.sm))
+
+        # Export button
+        export_menubutton = ttk.Menubutton(actions_frame, text=f"{icons.DOWNLOAD} Export", width=15)
+        export_menu = tk.Menu(export_menubutton, tearoff=False)
+        export_menubutton["menu"] = export_menu
+        export_menu.add_command(label=f"{icons.FILE} Export Unmatched", command=self._export_unmatched)
+        export_menu.add_command(label=f"{icons.WARNING} Export Expired", command=self._export_expired)
+        export_menu.add_command(label=f"{icons.WARNING} Export Duplicates", command=self._export_duplicates)
+        export_menu.add_command(label=f"{icons.INFO} Export Zero Balance", command=self._export_zero_balance)
+        export_menubutton.pack(side="left")
 
         # --- Middle Frame Content ---
         # Main content notebook
@@ -177,29 +208,54 @@ class BalanceUpdaterApp:
         self.issues_tabs.pack(fill="both", expand=True)
 
         # --- Bottom Frame Content ---
-        # Manual entry widget
+        # Manual entry widget in card
+        manual_card = self._create_card_frame(bottom_frame, padding=theme.spacing.md)
+        manual_card.pack(fill="x", padx=theme.spacing.sm, pady=(0, theme.spacing.sm))
+
         self.manual_entry = ManualEntryWidget(
-            bottom_frame,
+            manual_card,
             on_update=self._handle_manual_update,
         )
-        self.manual_entry.pack(fill="x", padx=10, pady=5)
+        self.manual_entry.pack(fill="x")
 
-        # Save button
+        # Buttons card
+        buttons_card = self._create_card_frame(bottom_frame, padding=theme.spacing.md)
+        buttons_card.pack(fill="x", padx=theme.spacing.sm, pady=(0, theme.spacing.sm))
+
+        # Save button (primary action - larger)
         self.save_button = ttk.Button(
-            bottom_frame,
-            text="Save Updated Excel",
+            buttons_card,
+            text=f"{icons.SUCCESS} Save Updated Excel",
             command=self._save_excel,
+            width=30
         )
-        self.save_button.pack(pady=10, padx=10, fill="x")
+        self.save_button.pack(side="left", padx=(0, theme.spacing.sm))
 
-        # Status label
-        self.status_label = ttk.Label(bottom_frame, text="Ready", anchor="w")
-        self.status_label.pack(pady=(0, 5), fill="x")
+        # View Log button (secondary action - smaller)
+        ttk.Button(
+            buttons_card,
+            text=f"{icons.SEARCH} View Log",
+            command=self._view_log,
+            width=15
+        ).pack(side="left")
+
+        # Status bar with enhanced styling
+        status_frame = ttk.Frame(bottom_frame, relief="solid", borderwidth=1)
+        status_frame.pack(fill="x", padx=theme.spacing.sm, pady=(0, theme.spacing.sm))
+
+        # Status label with padding
+        self.status_label = ttk.Label(
+            status_frame,
+            text=f"{icons.APP_ICON} Ready",
+            anchor="w",
+            padding=(theme.spacing.md, theme.spacing.sm)
+        )
+        self.status_label.pack(side="left", fill="x", expand=True)
 
     def _on_pdf_selected(self, files) -> None:
         """Handle PDF files selection."""
         self.pdf_files = files
-        self.status_label.config(text=f"{len(files)} PDF(s) selected.")
+        self.status_label.config(text=f"{icons.PDF} {len(files)} PDF(s) selected.")
 
     def _select_excel_file(self) -> None:
         """Handle Excel file selection and save to settings."""
@@ -236,7 +292,7 @@ class BalanceUpdaterApp:
             logging.error("Execution stopped: Excel file not set.")
             return
 
-        self.status_label.config(text="Extracting...")
+        self.status_label.config(text=f"{icons.REFRESH} Extracting...")
         self.root.update_idletasks()
 
         # Reset thread state
@@ -325,16 +381,16 @@ class BalanceUpdaterApp:
                     "Error",
                     f"An error occurred during extraction: {self.extraction_thread_error}"
                 )
-                self.status_label.config(text="Extraction failed.")
+                self.status_label.config(text=f"{icons.ERROR} Extraction failed.")
                 return
 
             # Handle successful results
             if self.extraction_thread_result:
                 self.extraction_result, self.excel_codes = self.extraction_thread_result
                 self._display_results()
-                self.status_label.config(text="Extraction complete.")
+                self.status_label.config(text=f"{icons.SUCCESS} Extraction complete.")
             else:
-                self.status_label.config(text="Extraction completed with no data.")
+                self.status_label.config(text=f"{icons.WARNING} Extraction completed with no data.")
 
     def _display_results(self) -> None:
         """Display extraction results in UI."""
@@ -348,12 +404,12 @@ class BalanceUpdaterApp:
         # Update status with statistics
         stats = DataValidator.get_summary_stats(self.extraction_result)
         self.status_label.config(
-            text=f"Matched: {stats['matched']} | "
-                 f"Missing: {stats['missing']} | "
-                 f"Not in Excel: {stats['unmatched']} | "
-                 f"Duplicates: {stats['duplicates']} | "
-                 f"Expired: {stats['expired']} | "
-                 f"Zero Balance: {stats['zero_balance']}"
+            text=f"{icons.SUCCESS} {stats['matched']} Matched | "
+                 f"{icons.WARNING} {stats['missing']} Missing | "
+                 f"{icons.INFO} {stats['unmatched']} Not in Excel | "
+                 f"{icons.WARNING} {stats['duplicates']} Duplicates | "
+                 f"{icons.WARNING} {stats['expired']} Expired | "
+                 f"{icons.INFO} {stats['zero_balance']} Zero Balance"
         )
 
     def _handle_manual_update(self, balance: float) -> None:
@@ -491,3 +547,28 @@ class BalanceUpdaterApp:
             messagebox.showinfo("Success", f"Zero balance items exported to {file_path}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to export: {str(e)}")
+
+    def _view_log(self) -> None:
+        """Open the extraction log file in default text editor."""
+        log_file = "extraction_log.txt"
+
+        if not os.path.exists(log_file):
+            messagebox.showwarning(
+                "Log Not Found",
+                f"The log file '{log_file}' does not exist yet.\n\n"
+                "Run an extraction first to generate the log file."
+            )
+            return
+
+        try:
+            # Open log file with default application
+            if sys.platform == "win32":
+                os.startfile(log_file)
+            elif sys.platform == "darwin":
+                subprocess.call(["open", log_file])
+            else:
+                subprocess.call(["xdg-open", log_file])
+
+            self.status_label.config(text=f"{icons.INFO} Opened log file: {log_file}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open log file: {str(e)}")
