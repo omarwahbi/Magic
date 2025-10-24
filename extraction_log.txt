@@ -1,0 +1,10 @@
+2025-10-24 13:17:46,138 - INFO - \u2139\ufe0f Cross-page continuation in '«ﬁ—«’ «·‘—ﬂ… «·⁄«„… «”ﬂ«‰.pdf': Item 9058 ('Brufen 200mgtab') assigned to national code 10-A00-011 from previous page/table
+2025-10-24 13:17:46,265 - INFO - \u2139\ufe0f Cross-page continuation in '«ﬁ—«’ «·‘—ﬂ… «·⁄«„… «”ﬂ«‰.pdf': Item 6709 ('MELOXICAM 7.5') assigned to national code 02-K00-002 from previous page/table
+2025-10-24 13:17:46,605 - INFO - \u2139\ufe0f Cross-page continuation in '«·«„»Ê·«  «·‘—ﬂ… «·⁄«„… «·«”ﬂ«‰.pdf': Item 10997 ('Omeprazol 40mg') assigned to national code 02-C00-035 from previous page/table
+2025-10-24 13:17:46,815 - INFO - \u2139\ufe0f Cross-page continuation in '«·«„»Ê·«  «·‘—ﬂ… «·⁄«„… «·«”ﬂ«‰.pdf': Item 413543 ('Fllitropine 75IU') assigned to national code 06-H00-011 from previous page/table
+2025-10-24 13:17:48,047 - INFO - \u2139\ufe0f Cross-page continuation in '„÷«œ«  ‘—ﬂ… ⁄«„….pdf': Item 413762 ('AFUNDAS -L50MGI.V') assigned to national code 05-C00-032 from previous page/table
+2025-10-24 13:18:42,018 - INFO - \u2139\ufe0f Cross-page continuation in '«·«„»Ê·«  «·‘—ﬂ… «·⁄«„… «·«”ﬂ«‰.pdf': Item 10997 ('Omeprazol 40mg') assigned to national code 02-C00-035 from previous page/table
+2025-10-24 13:18:42,233 - INFO - \u2139\ufe0f Cross-page continuation in '«·«„»Ê·«  «·‘—ﬂ… «·⁄«„… «·«”ﬂ«‰.pdf': Item 413543 ('Fllitropine 75IU') assigned to national code 06-H00-011 from previous page/table
+2025-10-24 13:18:46,187 - INFO - Saved updated_medicines_20251024_131845.xlsx with 23 updates
+2025-10-24 13:23:35,681 - INFO - \u2139\ufe0f Cross-page continuation in '„÷«œ«  ‘—ﬂ… ⁄«„….pdf': Item 413762 ('AFUNDAS -L50MGI.V') assigned to national code 05-C00-032 from previous page/table
+2025-10-24 13:23:43,850 - INFO - Saved updated_medicines_20251024_132343.xlsx with 17 updates

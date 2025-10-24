@@ -75,12 +75,22 @@ class LoadingDialog:
         Args:
             message: New message to display
         """
-        if hasattr(self, 'message_label'):
-            self.message_label.config(text=message)
-            self.dialog.update_idletasks()
-            self.dialog.update()
+        try:
+            if hasattr(self, 'message_label') and self.dialog.winfo_exists():
+                self.message_label.config(text=message)
+                self.dialog.update_idletasks()
+                self.dialog.update()
+        except tk.TclError:
+            # Dialog was already closed, ignore the error
+            pass
 
     def close(self) -> None:
         """Close the loading dialog."""
-        self.progressbar.stop()
-        self.dialog.destroy()
+        try:
+            if hasattr(self, 'progressbar'):
+                self.progressbar.stop()
+            if hasattr(self, 'dialog') and self.dialog.winfo_exists():
+                self.dialog.destroy()
+        except tk.TclError:
+            # Dialog was already closed, ignore the error
+            pass
