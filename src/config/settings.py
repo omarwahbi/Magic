@@ -9,7 +9,7 @@ from typing import Tuple
 class LoggingConfig:
     """Logging configuration."""
     filename: str = 'extraction_log.txt'
-    level: int = logging.WARNING
+    level: int = logging.INFO  # Changed from WARNING to show cross-page continuation messages
     filemode: str = 'w'  # Overwrite log file each time
     format: str = '%(asctime)s - %(levelname)s - %(message)s'
 

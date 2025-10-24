@@ -253,6 +253,7 @@ class PDFExtractor:
         positions_for_balance = []
         national_codes_in_this_table = []  # Track codes within this table
         processed_items = set()  # Track (national_code, item_code) to avoid duplicates
+        first_item_row = None  # Track first item found to detect cross-page continuation
 
         for r_idx, row in enumerate(table):
             if not row:
@@ -291,6 +292,12 @@ class PDFExtractor:
             elif item_code and current_national_code:
                 if (current_national_code, item_code) not in processed_items:
                     # This is an item row under the current national code
+
+                    # Check if this is the first item in table and no national code found yet in this table
+                    if first_item_row is None and not national_codes_in_this_table:
+                        first_item_row = r_idx
+                        logging.info(f"ℹ️ Cross-page continuation in '{pdf_filename}': Item {item_code} ('{name}') assigned to national code {current_national_code} from previous page/table")
+
                     logging.debug(f"Row {r_idx}: Item {item_code} under national code {current_national_code}, name: {name}")
 
                     # Add this item to the national code's item list
@@ -299,6 +306,11 @@ class PDFExtractor:
                     # Track for balance extraction
                     positions_for_balance.append((r_idx, current_national_code, item_code, name))
                     processed_items.add((current_national_code, item_code))
+            elif item_code and not current_national_code:
+                # ORPHAN ITEM: Item found without any national code header
+                logging.warning(f"⚠️ ORPHAN ITEM in '{pdf_filename}' at row {r_idx}: Item code '{item_code}', name '{name}' has NO national code header!")
+                logging.warning(f"   This item appears without a XX-XXX-XXX national code and will be SKIPPED.")
+                logging.warning(f"   Check PDF structure - this section may be missing its national code header.")
 
         # Check for duplicates: if same code appears multiple times in this table
         code_counts = {}
@@ -432,18 +444,35 @@ class PDFExtractor:
                     logging.warning(f"      Balance row does not have the required column index: {self.column_index}")
                     extraction_data.add_zero_balance_item(national_code, item_code, name, pdf_filename)
         else:
-            # FREE/BUY types: Keep original logic - find the last non-empty row in the item range
-            balance_row_idx = end_row - 1
-            while balance_row_idx > row_idx:
-                if any(table[balance_row_idx]):  # Check if row has any content
-                    break
-                balance_row_idx -= 1
+            # FREE/BUY types: Use same logic as STOCK - read from item's own row
+            if row_idx < len(table):
+                balance_row = table[row_idx]
+                logging.debug(f"      >>> [FREE/BUY] Reading from item's own row {row_idx}: {balance_row}")
 
-            if balance_row_idx < len(table):
-                balance_row = table[balance_row_idx]
-                logging.debug(f"      >>> Found balance row! Content: {balance_row}")
+                # Check if this is a TOTAL row (المجموع)
+                # TOTAL rows have: empty item code in column 6 OR contain "المجموع" text
+                is_total_row = False
 
-                # Extract from configured column
+                # Check column 6 (item code column for FREE/BUY)
+                if len(balance_row) > 6:
+                    item_code_cell = balance_row[6]
+                    if not item_code_cell or not str(item_code_cell).strip():
+                        is_total_row = True
+                        logging.debug(f"        >>> TOTAL row detected (empty item code in col 6)")
+
+                # Also check if row contains "المجموع" text
+                if not is_total_row:
+                    row_text = " ".join(str(cell) for cell in balance_row if cell)
+                    if "المجموع" in row_text or "المجموع" in row_text:
+                        is_total_row = True
+                        logging.debug(f"        >>> TOTAL row detected (contains المجموع text)")
+
+                # Skip TOTAL rows
+                if is_total_row:
+                    logging.debug(f"        >>> TOTAL row detected - SKIPPING")
+                    return
+
+                # Extract from column 2 (الوارد/incoming column for FREE/BUY)
                 if len(balance_row) > self.column_index:
                     cell = balance_row[self.column_index]
                     if cell:
@@ -466,5 +495,4 @@ class PDFExtractor:
                         extraction_data.add_zero_balance_item(national_code, item_code, name, pdf_filename)
                 else:
                     logging.warning(f"      Balance row does not have the required column index: {self.column_index}")
-                    # Row doesn't have the column - report as zero balance
                     extraction_data.add_zero_balance_item(national_code, item_code, name, pdf_filename)

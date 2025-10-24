@@ -1,0 +1,35 @@
+\u2139\ufe0f Cross-page continuation: Item 9058 ('Brufen 200mgtab') at row 1 assigned to national code 10-A00-011 from previous page/table
+\u2139\ufe0f Cross-page continuation: Item 6709 ('MELOXICAM 7.5') at row 2 assigned to national code 02-K00-002 from previous page/table
+================================================================================
+Testing FREE Type Extraction
+================================================================================
+
+Extracting from: C:\Users\Omar\Desktop\pdfs\„«·\«ﬁ—«’ «·‘—ﬂ… «·⁄«„… «”ﬂ«‰.pdf
+
+================================================================================
+RESULTS FOR NATIONAL CODE: 02-K00-002 (Mebeverine)
+================================================================================
+Total Balance: 28920.0
+Expected: 810.0 (120 + 690)
+Result: [WRONG] - Got 28920.0 instead of 810.0
+
+Items tracked: 5
+  1. Item: 417298, Name: DOPA 135mg
+  2. Item: 10213, Name: Dusptaline 135mg
+  3. Item: 6709, Name: MELOXICAM 7.5
+  4. Item: 6720, Name: Mobic7.5Mg
+  5. Item: 11109, Name: MUBEK 7.5MG
+
+================================================================================
+OTHER EXTRACTED CODES (First 10)
+================================================================================
+1. 08-B00-010: 360.0
+2. 09-AG0-001: 30.0
+3. 09-H00-002: 1000.0
+4. 04-B00-004: 2492.0
+5. 08-E00-005: 1260.0
+6. 02-K00-002: 28920.0
+7. 10-A00-011: 14880.0
+8. 01-F00-038: 2010.0
+9. 04-J00-047: 150.0
+10. 01-F00-002: 7080.0
