@@ -9,8 +9,84 @@ from typing import Dict, Any
 
 SETTINGS_FILE = "settings.json"
 
+# Default column mappings (letter format)
+DEFAULT_COLUMN_MAPPINGS = {
+    "Free": "G",
+    "Stock": "H",
+    "Buy": "I"
+}
+
+
 class SettingsManager:
     """Handles reading from and writing to the settings.json file."""
+
+    @staticmethod
+    def column_letter_to_index(letter: str) -> int:
+        """
+        Convert Excel column letter to 0-based index.
+        
+        Args:
+            letter: Column letter (A-Z)
+            
+        Returns:
+            0-based column index (A=0, B=1, ..., Z=25)
+        """
+        return ord(letter.upper()) - ord('A')
+
+    @staticmethod
+    def get_column_mappings() -> Dict[str, str]:
+        """
+        Get column mappings from settings.
+        
+        Returns:
+            Dictionary mapping extraction type to column letter.
+        """
+        settings = SettingsManager.load_settings()
+        mappings = settings.get("column_mappings", {})
+        
+        # Merge with defaults for any missing keys
+        result = DEFAULT_COLUMN_MAPPINGS.copy()
+        for key in DEFAULT_COLUMN_MAPPINGS:
+            if key in mappings and mappings[key]:
+                result[key] = mappings[key].upper()
+        
+        return result
+
+    @staticmethod
+    def save_column_mappings(mappings: Dict[str, str]) -> None:
+        """
+        Save column mappings to settings.
+        
+        Args:
+            mappings: Dictionary mapping extraction type to column letter.
+        """
+        settings = SettingsManager.load_settings()
+        settings["column_mappings"] = {k: v.upper() for k, v in mappings.items()}
+        SettingsManager.save_settings(settings)
+
+    @staticmethod
+    def validate_column_mappings(mappings: Dict[str, str]) -> tuple[bool, str]:
+        """
+        Validate that column mappings are valid and not duplicated.
+        
+        Args:
+            mappings: Dictionary mapping extraction type to column letter.
+            
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        columns_used = []
+        for type_name, column in mappings.items():
+            # Check if column is valid (A-Z)
+            if not column or len(column) != 1 or not column.upper().isalpha():
+                return False, f"Invalid column '{column}' for {type_name}. Use A-Z."
+            
+            col_upper = column.upper()
+            if col_upper in columns_used:
+                return False, f"Column {col_upper} is assigned to multiple types."
+            columns_used.append(col_upper)
+        
+        return True, ""
 
     @staticmethod
     def load_settings() -> Dict[str, Any]:

@@ -21,6 +21,7 @@ from src.ui.components.issues_tabs import IssuesTabs
 from src.ui.components.manual_entry import ManualEntryWidget
 from src.ui.widgets.loading_dialog import LoadingDialog
 from src.services.settings_manager import SettingsManager
+from src.ui.components.settings_dialog import SettingsDialog
 from src.ui.theme import theme, icons
 import subprocess
 import sys
@@ -236,6 +237,14 @@ class BalanceUpdaterApp:
             buttons_card,
             text=f"{icons.SEARCH} View Log",
             command=self._view_log,
+            width=15
+        ).pack(side="left", padx=(0, theme.spacing.sm))
+
+        # Settings button
+        ttk.Button(
+            buttons_card,
+            text=f"{icons.SETTINGS} Settings",
+            command=self._open_settings,
             width=15
         ).pack(side="left")
 
@@ -572,3 +581,10 @@ class BalanceUpdaterApp:
             self.status_label.config(text=f"{icons.INFO} Opened log file: {log_file}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to open log file: {str(e)}")
+
+    def _open_settings(self) -> None:
+        """Open the settings dialog."""
+        dialog = SettingsDialog(self.root)
+        if dialog.show():
+            self.status_label.config(text=f"{icons.SUCCESS} Settings saved successfully.")
+

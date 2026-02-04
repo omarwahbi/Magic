@@ -21,20 +21,11 @@ class ColumnMapping:
 class ExtractionConfig:
     """Configuration for different extraction types."""
 
-    # Column mappings for each extraction type
-    MAPPINGS = {
-        ExtractionType.STOCK: ColumnMapping(
-            pdf_column=7,  # Actual Balance column
-            excel_column=6  # Column G (1-based: 7, 0-based: 6)
-        ),
-        ExtractionType.FREE: ColumnMapping(
-            pdf_column=2,  # الوارد (Incoming) column
-            excel_column=5  # Column F (1-based: 6, 0-based: 5)
-        ),
-        ExtractionType.BUY: ColumnMapping(
-            pdf_column=2,  # الوارد (Incoming) column
-            excel_column=7  # Column H (1-based: 8, 0-based: 7)
-        ),
+    # PDF column mappings (these are fixed based on PDF structure)
+    PDF_COLUMNS = {
+        ExtractionType.STOCK: 7,  # Actual Balance column
+        ExtractionType.FREE: 2,   # الوارد (Incoming) column
+        ExtractionType.BUY: 2,    # الوارد (Incoming) column
     }
 
     @classmethod
@@ -48,12 +39,12 @@ class ExtractionConfig:
         Returns:
             Column index in PDF table
         """
-        return cls.MAPPINGS[extraction_type].pdf_column
+        return cls.PDF_COLUMNS[extraction_type]
 
     @classmethod
     def get_excel_column(cls, extraction_type: ExtractionType) -> int:
         """
-        Get Excel column index for extraction type.
+        Get Excel column index for extraction type from settings.
 
         Args:
             extraction_type: Type of extraction
@@ -61,7 +52,11 @@ class ExtractionConfig:
         Returns:
             Column index in Excel (0-based)
         """
-        return cls.MAPPINGS[extraction_type].excel_column
+        from src.services.settings_manager import SettingsManager
+        
+        mappings = SettingsManager.get_column_mappings()
+        column_letter = mappings.get(extraction_type.value, "A")
+        return SettingsManager.column_letter_to_index(column_letter)
 
     @classmethod
     def from_string(cls, type_str: str) -> ExtractionType:
@@ -81,3 +76,4 @@ class ExtractionConfig:
             if extraction_type.value == type_str:
                 return extraction_type
         raise ValueError(f"Invalid extraction type: {type_str}")
+

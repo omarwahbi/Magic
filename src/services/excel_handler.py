@@ -11,6 +11,9 @@ from src.config.settings import AppSettings
 from src.config.extraction_config import ExtractionType, ExtractionConfig
 
 
+from openpyxl.cell.cell import MergedCell
+
+
 class ExcelHandler:
     """Handles all Excel file operations."""
 
@@ -63,6 +66,30 @@ class ExcelHandler:
         wb.close()
         return code_rows
 
+    def _get_actual_cell(self, ws: Worksheet, row: int, col: int):
+        """
+        Get the actual cell to write to, handling merged cells.
+        If the target is a merged cell, returns the top-left cell of the range.
+        
+        Args:
+            ws: Worksheet
+            row: Row number (1-based)
+            col: Column number (1-based)
+            
+        Returns:
+            Cell object that can be written to
+        """
+        cell = ws.cell(row=row, column=col)
+        
+        if isinstance(cell, MergedCell):
+            # Find the range containing this cell
+            for merged_range in ws.merged_cells.ranges:
+                if cell.coordinate in merged_range:
+                    # Return the top-left cell of the merged range
+                    return ws.cell(row=merged_range.min_row, column=merged_range.min_col)
+        
+        return cell
+
     def update_balances(
         self,
         balances: Dict[str, float],
@@ -96,8 +123,9 @@ class ExcelHandler:
             code = code.strip().upper()
 
             if code in balances:
-                # Write to target column (convert 0-based to 1-based)
-                ws.cell(row=row[0].row, column=col_idx + 1, value=balances[code])
+                # Get the target cell, handling merged cells if necessary
+                target_cell = self._get_actual_cell(ws, row=row[0].row, col=col_idx + 1)
+                target_cell.value = balances[code]
                 updated += 1
                 logging.debug(f"Updated {code} with balance {balances[code]}")
 

@@ -1,10 +1,43 @@
-2025-10-24 13:17:46,138 - INFO - \u2139\ufe0f Cross-page continuation in '«ﬁ—«’ «·‘—ﬂ… «·⁄«„… «”ﬂ«‰.pdf': Item 9058 ('Brufen 200mgtab') assigned to national code 10-A00-011 from previous page/table
-2025-10-24 13:17:46,265 - INFO - \u2139\ufe0f Cross-page continuation in '«ﬁ—«’ «·‘—ﬂ… «·⁄«„… «”ﬂ«‰.pdf': Item 6709 ('MELOXICAM 7.5') assigned to national code 02-K00-002 from previous page/table
-2025-10-24 13:17:46,605 - INFO - \u2139\ufe0f Cross-page continuation in '«·«„»Ê·«  «·‘—ﬂ… «·⁄«„… «·«”ﬂ«‰.pdf': Item 10997 ('Omeprazol 40mg') assigned to national code 02-C00-035 from previous page/table
-2025-10-24 13:17:46,815 - INFO - \u2139\ufe0f Cross-page continuation in '«·«„»Ê·«  «·‘—ﬂ… «·⁄«„… «·«”ﬂ«‰.pdf': Item 413543 ('Fllitropine 75IU') assigned to national code 06-H00-011 from previous page/table
-2025-10-24 13:17:48,047 - INFO - \u2139\ufe0f Cross-page continuation in '„÷«œ«  ‘—ﬂ… ⁄«„….pdf': Item 413762 ('AFUNDAS -L50MGI.V') assigned to national code 05-C00-032 from previous page/table
-2025-10-24 13:18:42,018 - INFO - \u2139\ufe0f Cross-page continuation in '«·«„»Ê·«  «·‘—ﬂ… «·⁄«„… «·«”ﬂ«‰.pdf': Item 10997 ('Omeprazol 40mg') assigned to national code 02-C00-035 from previous page/table
-2025-10-24 13:18:42,233 - INFO - \u2139\ufe0f Cross-page continuation in '«·«„»Ê·«  «·‘—ﬂ… «·⁄«„… «·«”ﬂ«‰.pdf': Item 413543 ('Fllitropine 75IU') assigned to national code 06-H00-011 from previous page/table
-2025-10-24 13:18:46,187 - INFO - Saved updated_medicines_20251024_131845.xlsx with 23 updates
-2025-10-24 13:23:35,681 - INFO - \u2139\ufe0f Cross-page continuation in '„÷«œ«  ‘—ﬂ… ⁄«„….pdf': Item 413762 ('AFUNDAS -L50MGI.V') assigned to national code 05-C00-032 from previous page/table
-2025-10-24 13:23:43,850 - INFO - Saved updated_medicines_20251024_132343.xlsx with 17 updates
+2026-02-04 23:20:15,992 - ERROR - Execution stopped: PDF file not selected.
+2026-02-04 23:20:25,211 - INFO - \u2139\ufe0f Cross-page continuation in '«ﬁ—«’ „«·.pdf': Item 10363 ('Capoten 25mgtab') assigned to national code 01-E00-003 from previous page/table
+2026-02-04 23:20:25,521 - INFO - \u2139\ufe0f Cross-page continuation in '«ﬁ—«’ „«·.pdf': Item 10505 ('Plavix 75mgtab') assigned to national code 08-E00-005 from previous page/table
+2026-02-04 23:20:25,521 - WARNING - DUPLICATE DETECTED: National code 06-AB0-046 appears multiple times in same table!
+2026-02-04 23:20:25,673 - INFO - \u2139\ufe0f Cross-page continuation in '«ﬁ—«’ „«·.pdf': Item 6320 ('Digoxin tab') assigned to national code 01-AA0-004 from previous page/table
+2026-02-04 23:20:25,843 - INFO - \u2139\ufe0f Cross-page continuation in '«ﬁ—«’ „«·.pdf': Item 2188 ('DAONEER 5MG') assigned to national code 06-AB0-008 from previous page/table
+2026-02-04 23:20:26,194 - INFO - \u2139\ufe0f Cross-page continuation in '«ﬁ—«’ „«·.pdf': Item 10784 ('Plasil 10mgtab') assigned to national code 02-L00-005 from previous page/table
+2026-02-04 23:20:27,443 - INFO - \u2139\ufe0f Cross-page continuation in '«„»Ê·«  „«·.pdf': Item 10916 ('Atropin amp') assigned to national code 14-DB0-003 from previous page/table
+2026-02-04 23:20:27,443 - WARNING - DUPLICATE DETECTED: National code 14-B00-038 appears multiple times in same table!
+2026-02-04 23:20:27,616 - INFO - \u2139\ufe0f Cross-page continuation in '«„»Ê·«  „«·.pdf': Item 10952 ('B12') assigned to national code 08-B00-005 from previous page/table
+2026-02-04 23:20:28,429 - INFO - \u2139\ufe0f Cross-page continuation in '«„»Ê·«  „«·.pdf': Item 10606 ('Lidocain') assigned to national code 01-D00-034 from previous page/table
+2026-02-04 23:20:28,611 - INFO - \u2139\ufe0f Cross-page continuation in '«„»Ê·«  „«·.pdf': Item 10411 ('Magnesium x1 amp') assigned to national code 09-CF0-001 from previous page/table
+2026-02-04 23:20:28,944 - INFO - \u2139\ufe0f Cross-page continuation in '«„»Ê·«  „«·.pdf': Item 11001 ('Omnipague 350mg') assigned to national code 18-000-019 from previous page/table
+2026-02-04 23:20:29,593 - INFO - \u2139\ufe0f Cross-page continuation in '«„»Ê·«  „«·.pdf': Item 101022 ('prostin') assigned to national code 01-D00-014 from previous page/table
+2026-02-04 23:20:30,934 - WARNING - DUPLICATE DETECTED: National code 15-B00-050 appears multiple times in same table!
+2026-02-04 23:20:31,093 - WARNING - DUPLICATE DETECTED: National code 15-AA0-020 appears multiple times in same table!
+2026-02-04 23:20:31,259 - INFO - \u2139\ufe0f Cross-page continuation in '«Ê—«„ „«·.pdf': Item 5023 ('Mitoxantron 20mgvial Eleve') assigned to national code 15-ACO-014 from previous page/table
+2026-02-04 23:20:31,435 - INFO - \u2139\ufe0f Cross-page continuation in '«Ê—«„ „«·.pdf': Item 6393 ('Paclitaxel 300mg Vial') assigned to national code 15-DOO-004 from previous page/table
+2026-02-04 23:20:31,435 - WARNING - DUPLICATE DETECTED: National code 15-AB0-034 appears multiple times in same table!
+2026-02-04 23:20:32,163 - WARNING - DUPLICATE DETECTED: National code 05-B00-001 appears multiple times in same table!
+2026-02-04 23:20:32,758 - INFO - \u2139\ufe0f Cross-page continuation in '„Õ«·Ì· „«·.pdf': Item 4442 ('N/S 9%100MG') assigned to national code 09-D00-062 from previous page/table
+2026-02-04 23:20:32,946 - WARNING - DUPLICATE DETECTED: National code 04-H00-012 appears multiple times in same table!
+2026-02-04 23:20:33,170 - WARNING - DUPLICATE DETECTED: National code 05-E00-002 appears multiple times in same table!
+2026-02-04 23:20:33,170 - WARNING - DUPLICATE DETECTED: National code 03-B00-015 appears multiple times in same table!
+2026-02-04 23:20:33,346 - INFO - \u2139\ufe0f Cross-page continuation in '„”«ÕÌﬁ —’Ìœ „«·.pdf': Item 14063 ('becotide inhalerCortis') assigned to national code 03-B00-015 from previous page/table
+2026-02-04 23:20:33,688 - INFO - \u2139\ufe0f Cross-page continuation in '„”«ÕÌﬁ —’Ìœ „«·.pdf': Item 412807 ('Dorzolamide eyedrop') assigned to national code 11-D00-026 from previous page/table
+2026-02-04 23:20:33,689 - WARNING - DUPLICATE DETECTED: National code 13-D00-038 appears multiple times in same table!
+2026-02-04 23:20:33,967 - INFO - \u2139\ufe0f Cross-page continuation in '„”«ÕÌﬁ —’Ìœ „«·.pdf': Item 418974 ('Hydrosone cream15g dubia') assigned to national code 13-D00-038 from previous page/table
+2026-02-04 23:20:34,155 - INFO - \u2139\ufe0f Cross-page continuation in '„”«ÕÌﬁ —’Ìœ „«·.pdf': Item 417505 ('Xylocaine 2%Gel 15gm') assigned to national code 07-E00-010 from previous page/table
+2026-02-04 23:20:34,155 - WARNING - DUPLICATE DETECTED: National code 05-D00-014 appears multiple times in same table!
+2026-02-04 23:20:34,332 - WARNING - DUPLICATE DETECTED: National code 04-G00-038 appears multiple times in same table!
+2026-02-04 23:20:34,332 - WARNING - DUPLICATE DETECTED: National code 04-G00-038 appears multiple times in same table!
+2026-02-04 23:20:34,511 - INFO - \u2139\ufe0f Cross-page continuation in '„”«ÕÌﬁ —’Ìœ „«·.pdf': Item 418044 ('Hayasdol syrup100ml') assigned to national code 04-G00-038 from previous page/table
+2026-02-04 23:20:34,512 - WARNING - DUPLICATE DETECTED: National code 14-AB0-011 appears multiple times in same table!
+2026-02-04 23:20:34,731 - INFO - \u2139\ufe0f Cross-page continuation in '„”«ÕÌﬁ —’Ìœ „«·.pdf': Item 415318 ('Oculata 0.005%sterilceye') assigned to national code 11-D00-027 from previous page/table
+2026-02-04 23:20:35,228 - INFO - \u2139\ufe0f Cross-page continuation in '„÷«œ«  „«·.pdf': Item 14630 ('Jamox 250mg susp.') assigned to national code 05-AA0-004 from previous page/table
+2026-02-04 23:20:35,228 - WARNING - DUPLICATE DETECTED: National code 05-AB0-031 appears multiple times in same table!
+2026-02-04 23:20:35,490 - INFO - \u2139\ufe0f Cross-page continuation in '„÷«œ«  „«·.pdf': Item 14995 ('Ceftriaxone 1gvial') assigned to national code 05-AB0-031 from previous page/table
+2026-02-04 23:20:35,491 - WARNING - DUPLICATE DETECTED: National code 05-AG0-051 appears multiple times in same table!
+2026-02-04 23:20:35,801 - INFO - \u2139\ufe0f Cross-page continuation in '„÷«œ«  „«·.pdf': Item 14766 ('Erythromycin 250mgsyr') assigned to national code 05-AG0-036 from previous page/table
+2026-02-04 23:20:35,972 - WARNING - DUPLICATE DETECTED: National code 05-C00-013 appears multiple times in same table!
+2026-02-04 23:20:36,134 - INFO - \u2139\ufe0f Cross-page continuation in '„÷«œ«  „«·.pdf': Item 14898 ('Nystatdad 100000U\ML') assigned to national code 05-C00-013 from previous page/table
+2026-02-04 23:20:44,310 - INFO - Saved updated_medicines_20260204_232043.xlsx with 323 updates
